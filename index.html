@@ -8,7 +8,7 @@
     <style>
         :root {
             --bg-color: #E88565;
-            --bg-bright: #734240;
+            --bg-bright: #654f4e; /* Berubah menjadi coklat baru sesuai request */
             --sidebar-bg: rgba(80, 23, 24, 0.90);
             --brand-red: #EF3E4A;
             --text-color: #FEDAC2;
@@ -45,9 +45,10 @@
         #round-indicator { font-size: 24px; letter-spacing: 6px; }
         #timer-display { font-size: 100px; margin-top: -10px; line-height: 1; }
 
-        .main-workspace { flex: 1; display: flex; align-items: center; justify-content: center; }
+        /* Diperbarui agar center dan menyusun vertikal */
+        .main-workspace { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
 
-        /* --- SIDEBARS (Left sidebar width reduced) --- */
+        /* --- SIDEBARS --- */
         .sidebar {
             position: fixed; top: 2vh; height: 96vh; z-index: 100;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -58,7 +59,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .sidebar.left { width: 330px; left: -330px; } /* Slimmer Width */
+        .sidebar.left { width: 330px; left: -330px; }
         .sidebar.left.open { left: 10px; }
         .sidebar.right { width: 320px; right: -320px; }
         .sidebar.right.open { right: 10px; }
@@ -85,6 +86,7 @@
         .player-input {
             background: transparent; border: none; border-bottom: 1px solid var(--accent-color);
             color: var(--off-white); font-size: 16px; width: 100%; font-weight: bold; padding-bottom: 3px;
+            outline: none;
         }
 
         .gulp-circle {
@@ -126,10 +128,17 @@
         .powerup-title { color: var(--off-white); margin: 8px 0 5px 0; font-size: 15px; letter-spacing: 1px;}
         .powerup-desc { font-size: 12.5px; line-height: 1.4; color: rgba(250, 249, 246, 0.85); }
 
-        /* --- BUTTONS --- */
+        /* --- BUTTONS & TOOLS --- */
         button { cursor: pointer; border: none; font-family: var(--font-main); transition: 0.2s; }
         button:active { transform: scale(0.9); }
         .nav-btn { background: var(--bg-bright); color: var(--off-white); padding: 15px 30px; border-radius: 50px; font-weight: bold; }
+
+        .tool-btn {
+            background: var(--bg-bright); color: var(--off-white); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px;
+        }
+        .tool-btn.active-tool {
+            background: var(--off-white); color: var(--bg-bright); box-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
 
         #start-overlay {
             position: fixed; inset: 0; background: var(--bg-color);
@@ -151,10 +160,31 @@
     </header>
 
     <main class="main-workspace">
-        <button id="central-start-btn" onclick="game.startTimer()" 
-                style="font-size: 24px; padding: 20px 60px; border-radius: 100px; background: var(--bg-bright); color: var(--off-white); border: 2px solid var(--off-white);">
-            START TIMER
-        </button>
+        
+        <!-- DRAWING BOARD SECTION -->
+        <div id="drawing-area" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="tools-container" style="display: flex; gap: 10px;">
+                <button id="tool-pen" class="tool-btn active-tool" onclick="drawing.setTool('pen')">PEN</button>
+                <button id="tool-eraser" class="tool-btn" onclick="drawing.setTool('eraser')">ERASER</button>
+                <button class="tool-btn" onclick="drawing.undo()">UNDO</button>
+                <button class="tool-btn" onclick="drawing.redo()">REDO</button>
+                <button class="tool-btn" onclick="drawing.reset()">RESET</button>
+            </div>
+            
+            <!-- Canvas dengan warna lebih terang sedikit dari background dasar -->
+            <canvas id="board-canvas" width="500" height="400" 
+                    style="background: rgba(255,255,255,0.2); border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid var(--off-white); cursor: crosshair;">
+            </canvas>
+        </div>
+
+        <!-- START TIMER BUTTON -->
+        <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+            <button id="central-start-btn" onclick="game.startTimer()" 
+                    style="font-size: 20px; padding: 15px 50px; border-radius: 100px; background: var(--bg-bright); color: var(--off-white); border: 2px solid var(--off-white);">
+                START TIMER
+            </button>
+        </div>
+
     </main>
 
     <!-- LEFT SIDEBAR -->
@@ -209,6 +239,113 @@
     </footer>
 
     <script>
+        // --- DRAWING BOARD LOGIC ---
+        class DrawingBoard {
+            constructor() {
+                this.canvas = document.getElementById('board-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isDrawing = false;
+                this.tool = 'pen';
+                
+                this.history =[];
+                this.historyStep = -1;
+                
+                this.saveState(); // Simpan kondisi kanvas kosong saat inisialisasi
+                this.setupEvents();
+            }
+
+            setupEvents() {
+                this.canvas.addEventListener('mousedown', (e) => this.startPosition(e));
+                this.canvas.addEventListener('mouseup', () => this.endPosition());
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseout', () => this.endPosition());
+            }
+
+            startPosition(e) {
+                this.isDrawing = true;
+                this.draw(e);
+            }
+
+            endPosition() {
+                if (this.isDrawing) {
+                    this.isDrawing = false;
+                    this.ctx.beginPath();
+                    this.saveState();
+                }
+            }
+
+            draw(e) {
+                if (!this.isDrawing) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                this.ctx.lineCap = 'round';
+
+                if (this.tool === 'pen') {
+                    this.ctx.globalCompositeOperation = 'source-over';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.strokeStyle = '#28292B'; // Warna Tinta (Gelap)
+                } else {
+                    // Fitur Penghapus menggunakan sistem transparan (destination-out)
+                    this.ctx.globalCompositeOperation = 'destination-out';
+                    this.ctx.lineWidth = 25; 
+                }
+
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, y);
+            }
+
+            setTool(selectedTool) {
+                this.tool = selectedTool;
+                document.getElementById('tool-pen').classList.remove('active-tool');
+                document.getElementById('tool-eraser').classList.remove('active-tool');
+                document.getElementById(`tool-${selectedTool}`).classList.add('active-tool');
+            }
+
+            saveState() {
+                this.historyStep++;
+                // Jika undo lalu menggambar sesuatu yang baru, buang riwayat setelahnya
+                this.history.length = this.historyStep;
+                this.history.push(this.canvas.toDataURL());
+            }
+
+            undo() {
+                if (this.historyStep > 0) {
+                    this.historyStep--;
+                    this.restoreState();
+                }
+            }
+
+            redo() {
+                if (this.historyStep < this.history.length - 1) {
+                    this.historyStep++;
+                    this.restoreState();
+                }
+            }
+
+            restoreState() {
+                const img = new Image();
+                img.src = this.history[this.historyStep];
+                img.onload = () => {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.globalCompositeOperation = 'source-over';
+                    this.ctx.drawImage(img, 0, 0);
+                };
+            }
+
+            reset() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.history =[];
+                this.historyStep = -1;
+                this.saveState();
+            }
+        }
+
+        // --- GAME ENGINE ---
         class GameEngine {
             constructor() {
                 this.round = 1;
@@ -231,7 +368,7 @@
                     id: nextId,
                     name: this.elementNames[nextId],
                     baseScore: 0,
-                    roundScore: 0, // Explicitly tracking current round points
+                    roundScore: 0,
                     roundTime: null,
                     isVerified: false
                 });
@@ -275,6 +412,9 @@
                 this.resetTimer();
                 ui.updateRound(this.round);
                 ui.renderAll();
+                
+                // Trigger auto reset kanvas saat ganti ronde
+                if (typeof drawing !== 'undefined') drawing.reset();
             }
 
             recordGulp(id) {
@@ -415,6 +555,7 @@
             goHome() { if(confirm("Reset Game? All scores will be lost.")) location.reload(); }
         }
 
+        const drawing = new DrawingBoard();
         const game = new GameEngine();
         const ui = new UIController();
     </script>
