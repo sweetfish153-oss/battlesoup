@@ -9,7 +9,7 @@
         :root {
             --bg-color: #EF3E4A;
             --bg-bright: #f2616b;
-            --sidebar-bg: rgba(40, 41, 43, 0.95); /* Updated Dark transparent color */
+            --sidebar-bg: rgba(40, 41, 43, 0.95);
             --text-color: #FEDAC2;
             --off-white: #FAF9F6;
             --accent-color: #B0D8DC;
@@ -30,23 +30,23 @@
             flex-direction: column;
         }
 
-        /* --- TYPOGRAPHY UPDATES (Decreased ~10pt) --- */
+        /* --- TYPOGRAPHY --- */
         .display-font { 
             font-family: var(--font-display); 
             color: var(--off-white) !important; 
             text-transform: uppercase;
         }
-        h1.display-font { font-size: 60px; } /* Was much larger */
-        h2.display-font { font-size: 14px; letter-spacing: 2px; } /* Was 20px+ */
+        h1.display-font { font-size: 60px; }
+        h2.display-font { font-size: 14px; letter-spacing: 2px; }
 
         /* --- LAYOUT --- */
         header { text-align: center; padding: 10px; }
-        #round-indicator { font-size: 24px; letter-spacing: 6px; } /* Downsized */
-        #timer-display { font-size: 100px; margin-top: -10px; line-height: 1; } /* Downsized */
+        #round-indicator { font-size: 24px; letter-spacing: 6px; }
+        #timer-display { font-size: 100px; margin-top: -10px; line-height: 1; }
 
         .main-workspace { flex: 1; display: flex; align-items: center; justify-content: center; }
 
-        /* --- SIDEBARS (Overlap fixed, updated color) --- */
+        /* --- SIDEBARS (Left sidebar width reduced) --- */
         .sidebar {
             position: fixed; top: 2vh; height: 96vh; z-index: 100;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -57,12 +57,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .sidebar.left { width: 380px; left: -380px; }
+        .sidebar.left { width: 330px; left: -330px; } /* Slimmer Width */
         .sidebar.left.open { left: 10px; }
         .sidebar.right { width: 320px; right: -320px; }
         .sidebar.right.open { right: 10px; }
 
-        /* Tabs protrude strictly OUTSIDE the sidebar bounds */
         .tab-handle {
             position: absolute; top: 50%; transform: translateY(-50%);
             width: 50px; height: 100px; background: var(--sidebar-bg);
@@ -78,10 +77,9 @@
         }
         .player-slot {
             background: rgba(255,255,255,0.05); border-radius: 15px; padding: 10px;
-            display: flex; flex-direction: column; position: relative; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1);
         }
         .player-top-row { display: flex; align-items: center; gap: 10px; }
-        .player-info { flex: 1; }
         
         .player-input {
             background: transparent; border: none; border-bottom: 1px solid var(--accent-color);
@@ -95,7 +93,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0; font-size: 12px;
         }
 
-        .mole-emoji { cursor: pointer; font-size: 20px; }
+        .mole-emoji { cursor: pointer; font-size: 18px; }
         .mole-emoji.used { opacity: 0.15; filter: grayscale(1); }
 
         .verification-row {
@@ -111,14 +109,26 @@
         }
         .score-ctrl { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px; margin: 0 2px; }
 
+        /* --- POWERUP CARDS --- */
+        .powerup-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            margin-top: 5px;
+        }
+        .powerup-tag {
+            font-size: 10px; background: var(--accent-color); color: #28292B;
+            padding: 3px 8px; border-radius: 6px; font-weight: bold; text-transform: uppercase;
+        }
+        .powerup-title { color: var(--off-white); margin: 8px 0 5px 0; font-size: 15px; letter-spacing: 1px;}
+        .powerup-desc { font-size: 12.5px; line-height: 1.4; color: rgba(250, 249, 246, 0.85); }
+
         /* --- BUTTONS --- */
         button { cursor: pointer; border: none; font-family: var(--font-main); transition: 0.2s; }
         button:active { transform: scale(0.9); }
         .nav-btn { background: var(--bg-bright); color: var(--off-white); padding: 15px 30px; border-radius: 50px; font-weight: bold; }
-
-        .powerup-text { font-size: 13px; line-height: 1.4; color: var(--off-white); margin-top: 10px; }
-        .powerup-text h3 { color: var(--accent-color); margin-top: 15px; margin-bottom: 5px; font-size: 14px; }
-        .powerup-text ul { margin-left: 15px; margin-bottom: 10px; }
 
         #start-overlay {
             position: fixed; inset: 0; background: var(--bg-color);
@@ -162,24 +172,28 @@
         </div>
     </div>
 
-    <!-- RIGHT SIDEBAR -->
+    <!-- RIGHT SIDEBAR: Powerup Cards -->
     <div class="sidebar right" id="right-sidebar">
         <div class="tab-handle" onclick="ui.toggleSidebar('right')">⚡</div>
         <div class="sidebar-content" style="overflow-y: auto;">
-            <h2 class="display-font">POWERUPS</h2>
-            <div class="powerup-text">
-                <h3>Defend the kitchen:</h3>
-                <small>[use during a defend turn]</small>
-                <ul>
-                    <li><strong>DODGE:</strong> after the attacker give a coordinate, both the defender and attacker circle a direction on the TREATY, reveal at the same time. If the defender manages to choose a different direction from the attacker, congratulation, you've dodged the bullet. Otherwise, the attack stays.</li>
-                </ul>
+            <h2 class="display-font" style="margin-bottom: 10px;">POWERUPS</h2>
+            
+            <div class="powerup-card">
+                <span class="powerup-tag">🛡️ Defend Turn</span>
+                <h3 class="display-font powerup-title">DODGE</h3>
+                <p class="powerup-desc">Both players circle a direction on the TREATY and reveal at the same time. If you choose a different direction from the attacker, congratulation, you've dodged the bullet. Otherwise, the attack stays.</p>
+            </div>
 
-                <h3>Gathering intel:</h3>
-                <small>[use during an attack turn]</small>
-                <ul>
-                    <li><strong>MOLE TUNNEL</strong> (Limited to 2 uses only): the attacker may ask whether is there any ingredients in a specific row/column.</li>
-                    <li><strong>ESPIONAGE</strong> (alt to attacking): you are not attacking, instead given 2 chances to guess your opponent's coordinates.</li>
-                </ul>
+            <div class="powerup-card">
+                <span class="powerup-tag">🕵️ Attack Turn | 2 Uses</span>
+                <h3 class="display-font powerup-title">MOLE TUNNEL</h3>
+                <p class="powerup-desc">The attacker may ask whether there is any ingredients in a specific row or column.</p>
+            </div>
+
+            <div class="powerup-card">
+                <span class="powerup-tag">🔍 Attack Turn</span>
+                <h3 class="display-font powerup-title">ESPIONAGE</h3>
+                <p class="powerup-desc">Alternative to attacking: You are not attacking, instead you are given 2 chances to guess your opponent's coordinates.</p>
             </div>
         </div>
     </div>
@@ -204,7 +218,7 @@
             }
 
             init() {
-                // Start with 2 players
+                // Start with exactly 2 players
                 this.addPlayer();
                 this.addPlayer();
             }
@@ -216,12 +230,12 @@
                     id: nextId,
                     name: this.elementNames[nextId],
                     baseScore: 0,
+                    roundScore: 0, // Explicitly tracking current round points
                     roundTime: null,
                     isVerified: false
                 });
                 ui.renderAll();
                 
-                // Hide button if limit reached
                 if(this.players.length >= 6) {
                     document.getElementById('add-player-btn').style.display = 'none';
                 }
@@ -249,9 +263,10 @@
             }
 
             changeRound(val) {
-                // Commit current dynamic round points to permanent baseScore
+                // Commit temporary round scores to permanent base score
                 this.players.forEach(p => {
-                    if (p.isVerified) p.baseScore += ui.getRoundPoints(p);
+                    p.baseScore += p.roundScore;
+                    p.roundScore = 0;
                     p.roundTime = null;
                     p.isVerified = false;
                 });
@@ -269,6 +284,24 @@
                 }
             }
 
+            // --- BULLETPROOF SCORE REVISION LOGIC ---
+            recalculateRoundScores() {
+                // 1. Reset everyone's round score to 0
+                this.players.forEach(p => p.roundScore = 0);
+
+                // 2. Filter only players marked "RIGHT", sort them by lowest time
+                const verifiedPlayers = this.players
+                    .filter(p => p.isVerified)
+                    .sort((a, b) => a.roundTime - b.roundTime);
+
+                // 3. Assign 3, 2, 1 based on their true time-based rank
+                verifiedPlayers.forEach((p, index) => {
+                    if (index === 0) p.roundScore = 3;
+                    else if (index === 1) p.roundScore = 2;
+                    else p.roundScore = 1;
+                });
+            }
+
             verify(id, status) {
                 const p = this.players.find(x => x.id === id);
                 if (status) {
@@ -277,6 +310,9 @@
                     p.roundTime = null;
                     p.isVerified = false;
                 }
+                
+                // Immediately recalculate and adjust scores based on time rank
+                this.recalculateRoundScores();
                 ui.renderAll();
             }
 
@@ -306,18 +342,6 @@
                 return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
             }
 
-            // Calculates points dynamically: 3 for fastest verified, 2 for second, 1 for rest
-            getRoundPoints(player) {
-                if (!player.isVerified) return 0;
-                const verifiedOnes = game.players
-                    .filter(p => p.isVerified)
-                    .sort((a, b) => a.roundTime - b.roundTime);
-                const rank = verifiedOnes.findIndex(p => p.id === player.id);
-                if (rank === 0) return 3;
-                if (rank === 1) return 2;
-                return 1;
-            }
-
             renderAll() {
                 this.renderPlayers();
                 this.renderLeaderboard();
@@ -329,7 +353,7 @@
                     <div class="player-slot">
                         <div class="player-top-row">
                             <button class="gulp-circle" onclick="game.recordGulp(${p.id})">GULP!</button>
-                            <div class="player-info">
+                            <div style="flex: 1;">
                                 <input class="player-input" value="${p.name}" onchange="game.players.find(x=>x.id==${p.id}).name=this.value">
                                 <div style="margin-top:5px; display:flex; gap:10px; align-items:center;">
                                     <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
@@ -342,7 +366,6 @@
                             </div>
                         </div>
                         
-                        <!-- Right/Wrong buttons appear BELOW the info -->
                         ${p.roundTime !== null && !p.isVerified ? `
                             <div class="verification-row">
                                 <button onclick="game.verify(${p.id}, true)" style="background:#4CAF50; color:white; padding:6px 12px; border-radius:8px; font-size: 12px; font-weight:bold;">RIGHT</button>
@@ -355,23 +378,27 @@
 
             renderLeaderboard() {
                 const list = document.getElementById('leaderboard-list');
+                
+                // Sort by total visual score (Base + Current Round)
                 const sorted = [...game.players].sort((a, b) => {
-                    const totalA = a.baseScore + this.getRoundPoints(a);
-                    const totalB = b.baseScore + this.getRoundPoints(b);
+                    const totalA = a.baseScore + a.roundScore;
+                    const totalB = b.baseScore + b.roundScore;
                     return totalB - totalA;
                 });
 
                 list.innerHTML = sorted.map(p => {
-                    const roundPts = this.getRoundPoints(p);
-                    const displayScore = p.baseScore + roundPts;
+                    const displayScore = p.baseScore + p.roundScore;
                     
-                    // Only show in leaderboard if they have points or are verified in this round
+                    // Only show if they have points or are verified in this round
                     if(displayScore === 0 && !p.isVerified && p.baseScore === 0) return '';
                     
+                    // Show a green indicator if their score was just bumped this round
+                    const roundBonusText = p.roundScore > 0 ? `<span style="color:#4CAF50; font-size:12px; margin-left:4px;">(+${p.roundScore})</span>` : '';
+
                     return `
                         <div class="leaderboard-entry">
                             <span style="flex:1">${p.name}</span>
-                            <span style="margin-right:10px; color:var(--accent-color)">${displayScore} PT</span>
+                            <span style="margin-right:10px; color:var(--accent-color)">${displayScore} PT ${roundBonusText}</span>
                             <button class="score-ctrl" style="color:white;" onclick="game.adjustScore(${p.id}, 1)">+</button>
                             <button class="score-ctrl" style="color:white;" onclick="game.adjustScore(${p.id}, -1)">-</button>
                         </div>
