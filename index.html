@@ -8,7 +8,7 @@
     <style>
         :root {
             --bg-color: #E88565;
-            --bg-bright: #654f4e; /* Berubah menjadi coklat baru sesuai request */
+            --bg-bright: #654f4e; /* Coklat */
             --sidebar-bg: rgba(80, 23, 24, 0.90);
             --brand-red: #EF3E4A;
             --text-color: #FEDAC2;
@@ -29,6 +29,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            touch-action: none; /* Mencegah pull-to-refresh di beberapa browser mobile */
         }
 
         /* --- TYPOGRAPHY --- */
@@ -45,7 +46,6 @@
         #round-indicator { font-size: 24px; letter-spacing: 6px; }
         #timer-display { font-size: 100px; margin-top: -10px; line-height: 1; }
 
-        /* Diperbarui agar center dan menyusun vertikal */
         .main-workspace { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
 
         /* --- SIDEBARS --- */
@@ -66,7 +66,8 @@
 
         .tab-handle {
             position: absolute; top: 50%; transform: translateY(-50%);
-            width: 50px; height: 100px; background: var(--sidebar-bg);
+            width: 50px; height: 100px; 
+            background: var(--bg-bright); /* Diubah mengikuti warna bg-bright */
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
@@ -171,7 +172,6 @@
                 <button class="tool-btn" onclick="drawing.reset()">RESET</button>
             </div>
             
-            <!-- Canvas dengan warna lebih terang sedikit dari background dasar -->
             <canvas id="board-canvas" width="500" height="400" 
                     style="background: rgba(255,255,255,0.2); border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid var(--off-white); cursor: crosshair;">
             </canvas>
@@ -255,18 +255,38 @@
             }
 
             setupEvents() {
+                // MOUSE EVENTS
                 this.canvas.addEventListener('mousedown', (e) => this.startPosition(e));
-                this.canvas.addEventListener('mouseup', () => this.endPosition());
+                this.canvas.addEventListener('mouseup', (e) => this.endPosition(e));
                 this.canvas.addEventListener('mousemove', (e) => this.draw(e));
-                this.canvas.addEventListener('mouseout', () => this.endPosition());
+                this.canvas.addEventListener('mouseout', (e) => this.endPosition(e));
+
+                // TOUCH EVENTS (Untuk HP / Tablet / Touch Screen TV)
+                // Menggunakan passive: false agar e.preventDefault() bisa bekerja mencegah layar terscroll
+                this.canvas.addEventListener('touchstart', (e) => this.startPosition(e), { passive: false });
+                this.canvas.addEventListener('touchend', (e) => this.endPosition(e), { passive: false });
+                this.canvas.addEventListener('touchmove', (e) => this.draw(e), { passive: false });
+            }
+
+            // Fungsi ambil koordinat yg bisa mendeteksi Mouse atau Touch
+            getCoordinates(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
             }
 
             startPosition(e) {
+                if(e.cancelable) e.preventDefault();
                 this.isDrawing = true;
                 this.draw(e);
             }
 
-            endPosition() {
+            endPosition(e) {
+                if(e && e.cancelable) e.preventDefault();
                 if (this.isDrawing) {
                     this.isDrawing = false;
                     this.ctx.beginPath();
@@ -276,10 +296,9 @@
 
             draw(e) {
                 if (!this.isDrawing) return;
+                if(e.cancelable) e.preventDefault(); // Mencegah scrolling halaman saat menggambar
                 
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                const { x, y } = this.getCoordinates(e);
 
                 this.ctx.lineCap = 'round';
 
