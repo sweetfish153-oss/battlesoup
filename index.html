@@ -9,8 +9,10 @@
         :root {
             --bg-color: #28292B;
             --bg-bright: #3c3d3f;
-            --sidebar-bg: rgba(239, 62, 74, 0.75);
-            --brand-red: #EF3E4A;
+            /* Updated to #E57066 with 85% opacity for slight transparency */
+            --sidebar-bg: rgba(229, 112, 102, 0.85);
+            /* Updated the base red color for buttons to match */
+            --brand-red: #E57066;
             --text-color: #FEDAC2;
             --off-white: #FAF9F6;
             --accent-color: #B0D8DC;
@@ -136,6 +138,26 @@
             z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .hidden { display: none !important; }
+
+        /* --- THEME OVERRIDES --- */
+        /* Update the central start button to stand out with the new color */
+        #central-start-btn {
+            background: var(--brand-red) !important;
+            color: var(--off-white) !important;
+            border-color: var(--brand-red) !important;
+        }
+
+        /* Make Nav Buttons match the theme for better visibility on dark BG */
+        .nav-btn {
+            background: var(--brand-red);
+            color: var(--off-white);
+        }
+
+        /* STOP button override */
+        .nav-btn[onclick="game.pauseTimer()"] {
+            background: var(--off-white) !important;
+            color: #28292B !important;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +174,7 @@
 
     <main class="main-workspace">
         <button id="central-start-btn" onclick="game.startTimer()" 
-                style="font-size: 24px; padding: 20px 60px; border-radius: 100px; background: var(--bg-bright); color: var(--off-white); border: 2px solid var(--off-white);">
+                style="font-size: 24px; padding: 20px 60px; border-radius: 100px;">
             START TIMER
         </button>
     </main>
@@ -203,7 +225,7 @@
         <button class="nav-btn" onclick="game.changeRound(-1)">BACK</button>
         <button class="nav-btn" onclick="game.changeRound(1)">NEXT</button>
         <button class="nav-btn" onclick="ui.goHome()">HOME</button>
-        <button class="nav-btn" style="background: var(--off-white); color: #28292B" onclick="game.pauseTimer()">STOP</button>
+        <button class="nav-btn" onclick="game.pauseTimer()">STOP</button>
         <button class="nav-btn" onclick="game.startTimer()">RESUME</button>
         <button class="nav-btn" onclick="game.resetTimer()">RESTART</button>
     </footer>
@@ -381,7 +403,7 @@
                 const list = document.getElementById('leaderboard-list');
                 
                 // Sort by total visual score (Base + Current Round)
-                const sorted = [...game.players].sort((a, b) => {
+                const sorted =[...game.players].sort((a, b) => {
                     const totalA = a.baseScore + a.roundScore;
                     const totalB = b.baseScore + b.roundScore;
                     return totalB - totalA;
