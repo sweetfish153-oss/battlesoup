@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BATTLESOUP Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #EF3E4A;
+            --bg-bright: #f2616b;
+            --text-color: #FEDAC2;
+            --accent-color: #B0D8DC;
+            --font-main: 'Product Sans', 'Google Sans', sans-serif;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            aspect-ratio: 16 / 9;
+        }
+
+        /* --- UI COMPONENTS (GEMINI STYLE) --- */
+        .pill-card {
+            background-color: var(--bg-bright);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-main);
+            border-radius: 50px;
+            background: var(--bg-bright);
+            color: var(--text-color);
+            transition: var(--transition);
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+
+        button:active { transform: scale(0.95); }
+        button:hover { filter: brightness(1.1); }
+
+        /* --- SIDEBARS --- */
+        .sidebar {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 350px;
+            height: 85%;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar.left { left: -290px; }
+        .sidebar.left.open { left: 10px; }
+        .sidebar.right { right: -290px; }
+        .sidebar.right.open { right: 10px; }
+
+        .tab-handle {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 100px;
+            background: var(--bg-bright);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .left .tab-handle { right: 0; border-radius: 0 20px 20px 0; }
+        .right .tab-handle { left: 0; border-radius: 20px 0 0 20px; }
+
+        .sidebar-content {
+            height: 100%;
+            width: 290px;
+            overflow-y: auto;
+            margin: 0 50px;
+        }
+
+        /* --- CENTER CONTENT --- */
+        .main-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #timer-display {
+            font-size: 120px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .round-title { font-size: 40px; text-transform: uppercase; letter-spacing: 4px; }
+
+        /* --- PLAYER SLOTS --- */
+        .player-slot {
+            margin-bottom: 10px;
+            padding: 15px;
+        }
+        .player-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--text-color);
+            color: var(--text-color);
+            font-size: 18px;
+            width: 120px;
+            margin-right: 10px;
+        }
+        .gulp-btn { background: var(--accent-color); color: var(--bg-color); }
+        .mole-emoji { cursor: pointer; opacity: 1; transition: 0.3s; font-size: 20px; }
+        .mole-emoji.used { opacity: 0.2; grayscale: 1; }
+        
+        .correct-wrong-btns { margin-top: 10px; display: none; }
+        .correct-wrong-btns.active { display: block; }
+
+        /* --- POWERUP LIST --- */
+        .powerup-item { margin-bottom: 20px; border-bottom: 1px solid rgba(254, 218, 194, 0.2); padding-bottom: 10px; }
+        .powerup-title { color: var(--accent-color); font-weight: bold; display: block; margin-bottom: 5px; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav {
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn { background: var(--bg-bright); padding: 15px 30px; font-size: 18px; }
+
+        /* --- START SCREEN OVERLAY --- */
+        #start-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .huge-title { font-size: 100px; margin-bottom: 40px; color: var(--accent-color); }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-overlay">
+        <h1 class="huge-title">BATTLESOUP</h1>
+        <button onclick="ui.startGame()" style="font-size: 32px; padding: 20px 60px;">START GAME</button>
+    </div>
+
+    <!-- Left Sidebar: Players & Leaderboard -->
+    <div class="sidebar left" id="left-sidebar">
+        <div class="tab-handle" onclick="ui.toggleSidebar('left')">🏆</div>
+        <div class="sidebar-content pill-card">
+            <h2 style="margin-bottom: 10px;">Leaderboard</h2>
+            <div id="leaderboard-list" style="margin-bottom: 20px; color: var(--accent-color);"></div>
+            <hr>
+            <h2 style="margin-top: 20px; margin-bottom: 10px;">Participants</h2>
+            <div id="player-container"></div>
+            <button onclick="game.addPlayer()" style="width: 100%; margin-top: 10px;">ADD PLAYER +</button>
+        </div>
+    </div>
+
+    <!-- Right Sidebar: Powerups -->
+    <div class="sidebar right" id="right-sidebar">
+        <div class="tab-handle" onclick="ui.toggleSidebar('right')">⚡</div>
+        <div class="sidebar-content pill-card">
+            <h2>POWERUPS</h2>
+            <p style="font-size: 0.8em; margin-bottom: 15px;">Choose 1 per round if you were faster than opponent.</p>
+            
+            <div class="powerup-item">
+                <span class="powerup-title">🛡️ DODGE</span>
+                <small>Reveal directions on TREATY simultaneously. If different, you dodge!</small>
+            </div>
+            
+            <div class="powerup-item">
+                <span class="powerup-title">🕵️ MOLE TUNNEL</span>
+                <small>Ask if there's an ingredient in a specific row/column (2 uses).</small>
+            </div>
+
+            <div class="powerup-item">
+                <span class="powerup-title">🔍 ESPIONAGE</span>
+                <small>Skip attack to guess 2 coordinates immediately.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Area -->
+    <main class="main-screen">
+        <div id="round-indicator" class="round-title">ROUND 1</div>
+        <div id="timer-display">00:00</div>
+        <button id="central-start-btn" onclick="game.startTimer()" style="font-size: 24px; padding: 15px 40px;">START TIMER</button>
+    </main>
+
+    <!-- Navigation -->
+    <footer class="bottom-nav">
+        <button class="nav-btn" onclick="game.changeRound(-1)">◀ BACK</button>
+        <button class="nav-btn" onclick="game.changeRound(1)">NEXT ▶</button>
+        <button class="nav-btn" onclick="ui.goHome()">HOME</button>
+        <button class="nav-btn" style="background: var(--accent-color); color: var(--bg-color)" onclick="game.pauseTimer()">PAUSE</button>
+        <button class="nav-btn" onclick="game.startTimer()">RESUME</button>
+        <button class="nav-btn" onclick="game.resetTimer()">RESTART</button>
+    </footer>
+
+    <script>
+        /**
+         * BATTLESOUP GAME ENGINE 
+         * SOLID Principles: Logic (Game) separated from Presentation (UI)
+         */
+
+        class GameEngine {
+            constructor() {
+                this.round = 1;
+                this.seconds = 0;
+                this.timerInterval = null;
+                this.players = [];
+                this.gulpOrder = []; // Track sequence of correct answers
+            }
+
+            addPlayer() {
+                if (this.players.length >= 6) return;
+                const id = Date.now();
+                this.players.push({
+                    id,
+                    name: `Player ${this.players.length + 1}`,
+                    score: 0,
+                    moles: 2,
+                    currentTime: null,
+                    isCorrect: false
+                });
+                ui.renderPlayers();
+            }
+
+            startTimer() {
+                if (this.timerInterval) return;
+                document.getElementById('central-start-btn').classList.add('hidden');
+                this.timerInterval = setInterval(() => {
+                    this.seconds++;
+                    ui.updateTimer(this.seconds);
+                }, 1000);
+            }
+
+            pauseTimer() {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+
+            resetTimer() {
+                this.pauseTimer();
+                this.seconds = 0;
+                ui.updateTimer(0);
+                document.getElementById('central-start-btn').classList.remove('hidden');
+            }
+
+            changeRound(val) {
+                // Before changing round, process the leaderboard points
+                this.calculatePoints();
+                
+                this.round = Math.max(1, this.round + val);
+                ui.updateRound(this.round);
+                this.resetTimer();
+                
+                // Clear round-specific data
+                this.gulpOrder = [];
+                this.players.forEach(p => {
+                    p.currentTime = null;
+                    p.isCorrect = false;
+                });
+                ui.renderPlayers();
+                ui.renderLeaderboard();
+            }
+
+            recordGulp(playerId) {
+                const player = this.players.find(p => p.id === playerId);
+                if (player && !player.currentTime) {
+                    player.currentTime = this.seconds;
+                    ui.renderPlayers();
+                }
+            }
+
+            verifyAnswer(playerId, isCorrect) {
+                const player = this.players.find(p => p.id === playerId);
+                if (isCorrect) {
+                    player.isCorrect = true;
+                    this.gulpOrder.push(player);
+                } else {
+                    player.currentTime = null;
+                    player.isCorrect = false;
+                }
+                ui.renderPlayers();
+                ui.renderLeaderboard();
+            }
+
+            calculatePoints() {
+                // Filter players who were correct and sort by their recorded time
+                const roundWinners = this.players
+                    .filter(p => p.isCorrect)
+                    .sort((a, b) => a.currentTime - b.currentTime);
+
+                roundWinners.forEach((player, index) => {
+                    if (index === 0) player.score += 3;
+                    else if (index === 1) player.score += 2;
+                    else player.score += 1;
+                });
+            }
+
+            toggleMole(playerId, moleIndex) {
+                const player = this.players.find(p => p.id === playerId);
+                // Implementation handles via UI state
+            }
+        }
+
+        class UIController {
+            toggleSidebar(id) {
+                document.getElementById(`${id}-sidebar`).classList.toggle('open');
+            }
+
+            updateTimer(s) {
+                const mins = Math.floor(s / 60).toString().padStart(2, '0');
+                const secs = (s % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+            }
+
+            updateRound(r) {
+                document.getElementById('round-indicator').innerText = `ROUND ${r}`;
+            }
+
+            startGame() {
+                document.getElementById('start-overlay').classList.add('hidden');
+                game.addPlayer(); // Start with one player
+            }
+
+            goHome() {
+                if(confirm("Go back to title screen? Scores will be reset.")) {
+                    location.reload();
+                }
+            }
+
+            renderPlayers() {
+                const container = document.getElementById('player-container');
+                container.innerHTML = game.players.map(p => `
+                    <div class="player-slot pill-card">
+                        <input class="player-input" value="${p.name}" onchange="game.players.find(pl=>pl.id==${p.id}).name=this.value">
+                        <button class="gulp-btn" onclick="game.recordGulp(${p.id})">GULP!</button>
+                        
+                        <div style="margin-top:10px">
+                            <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
+                            <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
+                            <span style="margin-left:15px; font-weight:bold">${p.currentTime !== null ? ui.formatTime(p.currentTime) : ''}</span>
+                        </div>
+
+                        <div class="correct-wrong-btns ${p.currentTime !== null && !p.isCorrect ? 'active' : ''}">
+                            <button onclick="game.verifyAnswer(${p.id}, true)" style="background:#4CAF50; padding:5px 10px">CORRECT</button>
+                            <button onclick="game.verifyAnswer(${p.id}, false)" style="background:#f44336; padding:5px 10px">WRONG</button>
+                        </div>
+                        ${p.isCorrect ? '<span style="color:var(--accent-color); font-size:12px">✓ VERIFIED</span>' : ''}
+                    </div>
+                `).join('');
+            }
+
+            renderLeaderboard() {
+                const list = document.getElementById('leaderboard-list');
+                const sorted = [...game.players].sort((a, b) => b.score - a.score);
+                list.innerHTML = sorted
+                    .filter(p => p.score > 0)
+                    .map(p => `<div>${p.name}: ${p.score} PTS</div>`)
+                    .join('');
+            }
+
+            formatTime(s) {
+                const mins = Math.floor(s / 60).toString().padStart(2, '0');
+                const secs = (s % 60).toString().padStart(2, '0');
+                return `${mins}:${secs}`;
+            }
+
+            updateMole(el) {
+                el.classList.toggle('used');
+            }
+        }
+
+        const game = new GameEngine();
+        const ui = new UIController();
+
+    </script>
+</body>
+</html>
