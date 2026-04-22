@@ -10,6 +10,7 @@
             --bg-color: #EF3E4A;
             --bg-bright: #f2616b;
             --text-color: #FEDAC2;
+            --off-white: #FAF9F6; /* NEW TEXT COLOR */
             --accent-color: #B0D8DC;
             --font-main: 'Product Sans', 'Google Sans', sans-serif;
             --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -26,17 +27,15 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             aspect-ratio: 16 / 9;
         }
 
-        /* --- UI COMPONENTS (GEMINI STYLE) --- */
+        /* --- UI COMPONENTS --- */
         .pill-card {
             background-color: var(--bg-bright);
             border-radius: 24px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
         button {
@@ -52,22 +51,21 @@
         }
 
         button:active { transform: scale(0.95); }
-        button:hover { filter: brightness(1.1); }
 
-        /* --- SIDEBARS --- */
+        /* --- SIDEBARS (Updated Width) --- */
         .sidebar {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: 350px;
-            height: 85%;
+            height: 80%;
             z-index: 100;
             transition: var(--transition);
         }
 
-        .sidebar.left { left: -290px; }
+        .sidebar.left { width: 320px; left: -270px; }
         .sidebar.left.open { left: 10px; }
-        .sidebar.right { right: -290px; }
+        
+        .sidebar.right { width: 250px; right: -200px; } /* Leaner width */
         .sidebar.right.open { right: 10px; }
 
         .tab-handle {
@@ -75,7 +73,7 @@
             top: 50%;
             transform: translateY(-50%);
             width: 50px;
-            height: 100px;
+            height: 80px;
             background: var(--bg-bright);
             display: flex;
             align-items: center;
@@ -89,169 +87,156 @@
 
         .sidebar-content {
             height: 100%;
-            width: 290px;
+            width: calc(100% - 50px);
             overflow-y: auto;
             margin: 0 50px;
+            color: var(--off-white); /* Updated Text Color */
         }
 
-        /* --- CENTER CONTENT --- */
-        .main-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        /* --- LAYOUT POSITIONS --- */
+        header {
             text-align: center;
+            padding: 20px;
         }
 
         #timer-display {
-            font-size: 120px;
+            font-size: 100px;
             font-weight: bold;
-            margin: 20px 0;
-            font-variant-numeric: tabular-nums;
+            color: var(--off-white);
+            margin-top: -10px;
         }
 
-        .round-title { font-size: 40px; text-transform: uppercase; letter-spacing: 4px; }
-
-        /* --- PLAYER SLOTS --- */
-        .player-slot {
-            margin-bottom: 10px;
-            padding: 15px;
+        .round-title { 
+            font-size: 30px; 
+            color: var(--off-white); 
+            letter-spacing: 5px;
         }
+
+        .main-workspace {
+            flex: 1; /* This is the empty center part for scribbling */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- PLAYER LIST & LEADERBOARD --- */
+        .player-slot { margin-bottom: 15px; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .player-input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid var(--text-color);
-            color: var(--text-color);
-            font-size: 18px;
-            width: 120px;
-            margin-right: 10px;
+            background: transparent; border: none; border-bottom: 1px solid var(--text-color);
+            color: var(--off-white); font-size: 16px; width: 100px;
         }
-        .gulp-btn { background: var(--accent-color); color: var(--bg-color); }
-        .mole-emoji { cursor: pointer; opacity: 1; transition: 0.3s; font-size: 20px; }
-        .mole-emoji.used { opacity: 0.2; grayscale: 1; }
+        .gulp-btn { background: var(--accent-color); color: var(--bg-color); margin-left: 5px;}
         
-        .correct-wrong-btns { margin-top: 10px; display: none; }
-        .correct-wrong-btns.active { display: block; }
+        .mole-emoji { cursor: pointer; font-size: 22px; transition: 0.3s; }
+        .mole-emoji.used { opacity: 0.1; filter: grayscale(1); }
 
-        /* --- POWERUP LIST --- */
-        .powerup-item { margin-bottom: 20px; border-bottom: 1px solid rgba(254, 218, 194, 0.2); padding-bottom: 10px; }
-        .powerup-title { color: var(--accent-color); font-weight: bold; display: block; margin-bottom: 5px; }
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid rgba(250, 249, 246, 0.2);
+        }
 
         /* --- BOTTOM NAV --- */
-        .bottom-nav {
-            padding: 30px;
+        footer {
+            padding: 20px;
             display: flex;
             justify-content: center;
-            gap: 20px;
-            align-items: center;
+            gap: 15px;
         }
 
-        .nav-btn { background: var(--bg-bright); padding: 15px 30px; font-size: 18px; }
+        .nav-btn { background: var(--bg-bright); padding: 12px 25px; color: var(--off-white); }
 
-        /* --- START SCREEN OVERLAY --- */
         #start-overlay {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            position: fixed; inset: 0; background: var(--bg-color);
+            z-index: 1000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
-        .huge-title { font-size: 100px; margin-bottom: 40px; color: var(--accent-color); }
-        
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Start Screen -->
+    <!-- Start Screen Overlay -->
     <div id="start-overlay">
-        <h1 class="huge-title">BATTLESOUP</h1>
-        <button onclick="ui.startGame()" style="font-size: 32px; padding: 20px 60px;">START GAME</button>
+        <h1 style="font-size: 80px; color: var(--accent-color); margin-bottom: 20px;">BATTLESOUP</h1>
+        <button onclick="ui.startGame()" style="font-size: 28px; padding: 20px 50px;">START</button>
     </div>
 
-    <!-- Left Sidebar: Players & Leaderboard -->
+    <!-- Header: Round and Timer pushed to top -->
+    <header>
+        <div id="round-indicator" class="round-title">ROUND 1</div>
+        <div id="timer-display">00:00</div>
+    </header>
+
+    <!-- Center Workspace (Empty for scribbling) -->
+    <main class="main-workspace">
+        <button id="central-start-btn" onclick="game.startTimer()" 
+                style="font-size: 24px; padding: 20px 60px; border: 4px solid var(--off-white);">
+            START TIMER
+        </button>
+    </main>
+
+    <!-- Left Sidebar: Players & Dynamic Leaderboard -->
     <div class="sidebar left" id="left-sidebar">
         <div class="tab-handle" onclick="ui.toggleSidebar('left')">🏆</div>
         <div class="sidebar-content pill-card">
-            <h2 style="margin-bottom: 10px;">Leaderboard</h2>
-            <div id="leaderboard-list" style="margin-bottom: 20px; color: var(--accent-color);"></div>
-            <hr>
-            <h2 style="margin-top: 20px; margin-bottom: 10px;">Participants</h2>
+            <h2 style="color: var(--accent-color); margin-bottom: 10px;">LEADERBOARD</h2>
+            <div id="leaderboard-list">
+                <!-- Sorted by Current Round Verification -->
+            </div>
+            <hr style="margin: 15px 0; opacity: 0.3;">
+            <h3 style="margin-bottom: 10px;">PARTICIPANTS</h3>
             <div id="player-container"></div>
-            <button onclick="game.addPlayer()" style="width: 100%; margin-top: 10px;">ADD PLAYER +</button>
+            <button onclick="game.addPlayer()" style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.2);">+ ADD PLAYER</button>
         </div>
     </div>
 
-    <!-- Right Sidebar: Powerups -->
+    <!-- Right Sidebar: Leaner Powerups -->
     <div class="sidebar right" id="right-sidebar">
         <div class="tab-handle" onclick="ui.toggleSidebar('right')">⚡</div>
         <div class="sidebar-content pill-card">
-            <h2>POWERUPS</h2>
-            <p style="font-size: 0.8em; margin-bottom: 15px;">Choose 1 per round if you were faster than opponent.</p>
-            
-            <div class="powerup-item">
-                <span class="powerup-title">🛡️ DODGE</span>
-                <small>Reveal directions on TREATY simultaneously. If different, you dodge!</small>
-            </div>
-            
-            <div class="powerup-item">
-                <span class="powerup-title">🕵️ MOLE TUNNEL</span>
-                <small>Ask if there's an ingredient in a specific row/column (2 uses).</small>
-            </div>
-
-            <div class="powerup-item">
-                <span class="powerup-title">🔍 ESPIONAGE</span>
-                <small>Skip attack to guess 2 coordinates immediately.</small>
+            <h2 style="color: var(--accent-color); font-size: 1.2em;">POWERUPS</h2>
+            <div style="margin-top:20px;">
+                <p><strong>🛡️ DODGE</strong><br><small>Choose LEFT or RIGHT on Treaty. If different from attacker, you dodge.</small></p>
+                <br>
+                <p><strong>🕵️ MOLE</strong><br><small>Ask about specific row/column (2 uses).</small></p>
+                <br>
+                <p><strong>🔍 ESPIONAGE</strong><br><small>2 guesses instead of attacking.</small></p>
             </div>
         </div>
     </div>
 
-    <!-- Main Game Area -->
-    <main class="main-screen">
-        <div id="round-indicator" class="round-title">ROUND 1</div>
-        <div id="timer-display">00:00</div>
-        <button id="central-start-btn" onclick="game.startTimer()" style="font-size: 24px; padding: 15px 40px;">START TIMER</button>
-    </main>
-
-    <!-- Navigation -->
-    <footer class="bottom-nav">
+    <!-- Bottom Controls -->
+    <footer>
         <button class="nav-btn" onclick="game.changeRound(-1)">◀ BACK</button>
         <button class="nav-btn" onclick="game.changeRound(1)">NEXT ▶</button>
         <button class="nav-btn" onclick="ui.goHome()">HOME</button>
-        <button class="nav-btn" style="background: var(--accent-color); color: var(--bg-color)" onclick="game.pauseTimer()">PAUSE</button>
+        <button class="nav-btn" style="background: var(--accent-color); color: var(--bg-color)" onclick="game.pauseTimer()">STOP</button>
         <button class="nav-btn" onclick="game.startTimer()">RESUME</button>
         <button class="nav-btn" onclick="game.resetTimer()">RESTART</button>
     </footer>
 
     <script>
-        /**
-         * BATTLESOUP GAME ENGINE 
-         * SOLID Principles: Logic (Game) separated from Presentation (UI)
-         */
-
         class GameEngine {
             constructor() {
                 this.round = 1;
                 this.seconds = 0;
                 this.timerInterval = null;
                 this.players = [];
-                this.gulpOrder = []; // Track sequence of correct answers
             }
 
             addPlayer() {
                 if (this.players.length >= 6) return;
-                const id = Date.now();
                 this.players.push({
-                    id,
-                    name: `Player ${this.players.length + 1}`,
-                    score: 0,
-                    moles: 2,
+                    id: Date.now(),
+                    name: `Slot ${this.players.length + 1}`,
+                    totalScore: 0,
                     currentTime: null,
-                    isCorrect: false
+                    isVerified: false
                 });
                 ui.renderPlayers();
             }
@@ -278,60 +263,51 @@
             }
 
             changeRound(val) {
-                // Before changing round, process the leaderboard points
-                this.calculatePoints();
-                
+                // Finalize points from current round before switching
+                this.players.forEach(p => {
+                    if (p.isVerified) {
+                        const rank = this.getRankInRound(p);
+                        if (rank === 0) p.totalScore += 3;
+                        else if (rank === 1) p.totalScore += 2;
+                        else p.totalScore += 1;
+                    }
+                    // Reset round state
+                    p.currentTime = null;
+                    p.isVerified = false;
+                });
+
                 this.round = Math.max(1, this.round + val);
                 ui.updateRound(this.round);
                 this.resetTimer();
-                
-                // Clear round-specific data
-                this.gulpOrder = [];
-                this.players.forEach(p => {
-                    p.currentTime = null;
-                    p.isCorrect = false;
-                });
                 ui.renderPlayers();
                 ui.renderLeaderboard();
             }
 
-            recordGulp(playerId) {
-                const player = this.players.find(p => p.id === playerId);
-                if (player && !player.currentTime) {
-                    player.currentTime = this.seconds;
+            recordGulp(id) {
+                const p = this.players.find(x => x.id === id);
+                if (p && p.currentTime === null) {
+                    p.currentTime = this.seconds;
                     ui.renderPlayers();
                 }
             }
 
-            verifyAnswer(playerId, isCorrect) {
-                const player = this.players.find(p => p.id === playerId);
-                if (isCorrect) {
-                    player.isCorrect = true;
-                    this.gulpOrder.push(player);
+            verify(id, correct) {
+                const p = this.players.find(x => x.id === id);
+                if (correct) {
+                    p.isVerified = true;
                 } else {
-                    player.currentTime = null;
-                    player.isCorrect = false;
+                    p.currentTime = null;
+                    p.isVerified = false;
                 }
                 ui.renderPlayers();
                 ui.renderLeaderboard();
             }
 
-            calculatePoints() {
-                // Filter players who were correct and sort by their recorded time
-                const roundWinners = this.players
-                    .filter(p => p.isCorrect)
-                    .sort((a, b) => a.currentTime - b.currentTime);
-
-                roundWinners.forEach((player, index) => {
-                    if (index === 0) player.score += 3;
-                    else if (index === 1) player.score += 2;
-                    else player.score += 1;
-                });
-            }
-
-            toggleMole(playerId, moleIndex) {
-                const player = this.players.find(p => p.id === playerId);
-                // Implementation handles via UI state
+            getRankInRound(player) {
+                return this.players
+                    .filter(p => p.isVerified)
+                    .sort((a, b) => a.currentTime - b.currentTime)
+                    .indexOf(player);
             }
         }
 
@@ -352,60 +328,66 @@
 
             startGame() {
                 document.getElementById('start-overlay').classList.add('hidden');
-                game.addPlayer(); // Start with one player
+                game.addPlayer();
             }
 
-            goHome() {
-                if(confirm("Go back to title screen? Scores will be reset.")) {
-                    location.reload();
-                }
-            }
+            goHome() { if(confirm("Reset everything?")) location.reload(); }
 
             renderPlayers() {
                 const container = document.getElementById('player-container');
                 container.innerHTML = game.players.map(p => `
                     <div class="player-slot pill-card">
-                        <input class="player-input" value="${p.name}" onchange="game.players.find(pl=>pl.id==${p.id}).name=this.value">
+                        <input class="player-input" value="${p.name}" onchange="game.players.find(x=>x.id==${p.id}).name=this.value">
                         <button class="gulp-btn" onclick="game.recordGulp(${p.id})">GULP!</button>
-                        
-                        <div style="margin-top:10px">
+                        <div style="margin-top:8px">
                             <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
                             <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
-                            <span style="margin-left:15px; font-weight:bold">${p.currentTime !== null ? ui.formatTime(p.currentTime) : ''}</span>
+                            <span style="float:right; font-weight:bold">${p.currentTime !== null ? ui.formatTime(p.currentTime) : ''}</span>
                         </div>
-
-                        <div class="correct-wrong-btns ${p.currentTime !== null && !p.isCorrect ? 'active' : ''}">
-                            <button onclick="game.verifyAnswer(${p.id}, true)" style="background:#4CAF50; padding:5px 10px">CORRECT</button>
-                            <button onclick="game.verifyAnswer(${p.id}, false)" style="background:#f44336; padding:5px 10px">WRONG</button>
-                        </div>
-                        ${p.isCorrect ? '<span style="color:var(--accent-color); font-size:12px">✓ VERIFIED</span>' : ''}
+                        ${p.currentTime !== null && !p.isVerified ? `
+                            <div style="margin-top:10px">
+                                <button onclick="game.verify(${p.id}, true)" style="background:#4CAF50; font-size:12px">CORRECT</button>
+                                <button onclick="game.verify(${p.id}, false)" style="background:#EF3E4A; font-size:12px">WRONG</button>
+                            </div>
+                        ` : ''}
                     </div>
                 `).join('');
             }
 
             renderLeaderboard() {
                 const list = document.getElementById('leaderboard-list');
-                const sorted = [...game.players].sort((a, b) => b.score - a.score);
+                // Calculate temporary "live" scores for the current round
+                const sorted = [...game.players].sort((a, b) => {
+                    const scoreA = a.totalScore + (a.isVerified ? this.getLivePoints(a) : 0);
+                    const scoreB = b.totalScore + (b.isVerified ? this.getLivePoints(b) : 0);
+                    return scoreB - scoreA;
+                });
+
                 list.innerHTML = sorted
-                    .filter(p => p.score > 0)
-                    .map(p => `<div>${p.name}: ${p.score} PTS</div>`)
-                    .join('');
+                    .filter(p => p.totalScore > 0 || p.isVerified)
+                    .map(p => `
+                        <div class="leaderboard-entry">
+                            <span>${p.name}</span>
+                            <span>${p.totalScore + (p.isVerified ? this.getLivePoints(p) : 0)} PT</span>
+                        </div>
+                    `).join('');
+            }
+
+            getLivePoints(player) {
+                const rank = game.getRankInRound(player);
+                if (rank === 0) return 3;
+                if (rank === 1) return 2;
+                if (rank > 1) return 1;
+                return 0;
             }
 
             formatTime(s) {
-                const mins = Math.floor(s / 60).toString().padStart(2, '0');
-                const secs = (s % 60).toString().padStart(2, '0');
-                return `${mins}:${secs}`;
-            }
-
-            updateMole(el) {
-                el.classList.toggle('used');
+                return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
             }
         }
 
         const game = new GameEngine();
         const ui = new UIController();
-
     </script>
 </body>
 </html>
