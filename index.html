@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BATTLESOUP Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <title>BATTLESOUP | TV Dashboard</title>
+    <!-- Syne is a great alternative for the 'Sakuya' display look -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Product+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #EF3E4A;
             --bg-bright: #f2616b;
             --text-color: #FEDAC2;
-            --off-white: #FAF9F6; /* NEW TEXT COLOR */
+            --off-white: #FAF9F6;
             --accent-color: #B0D8DC;
-            --font-main: 'Product Sans', 'Google Sans', sans-serif;
-            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --font-display: 'Syne', sans-serif;
+            --font-main: 'Product Sans', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,195 +28,145 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            aspect-ratio: 16 / 9;
         }
 
-        /* --- UI COMPONENTS --- */
-        .pill-card {
-            background-color: var(--bg-bright);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* --- TYPOGRAPHY UPDATES --- */
+        .display-font { 
+            font-family: var(--font-display); 
+            color: var(--off-white) !important; 
+            text-transform: uppercase;
         }
 
-        button {
-            cursor: pointer;
-            border: none;
-            font-family: var(--font-main);
-            border-radius: 50px;
-            background: var(--bg-bright);
-            color: var(--text-color);
-            transition: var(--transition);
-            font-weight: bold;
-            padding: 10px 20px;
-        }
+        /* --- LAYOUT --- */
+        header { text-align: center; padding: 1vh; }
+        #round-indicator { font-size: 4vh; letter-spacing: 8px; }
+        #timer-display { font-size: 15vh; margin-top: -2vh; line-height: 1; }
 
-        button:active { transform: scale(0.95); }
+        .main-workspace { flex: 1; display: flex; align-items: center; justify-content: center; }
 
-        /* --- SIDEBARS (Updated Width) --- */
+        /* --- SIDEBARS --- */
         .sidebar {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 80%;
-            z-index: 100;
-            transition: var(--transition);
+            position: fixed; top: 50%; transform: translateY(-50%);
+            height: 90vh; z-index: 100; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .sidebar.left { width: 320px; left: -270px; }
+        .sidebar.left { width: 400px; left: -350px; }
         .sidebar.left.open { left: 10px; }
-        
-        .sidebar.right { width: 250px; right: -200px; } /* Leaner width */
+        .sidebar.right { width: 280px; right: -230px; }
         .sidebar.right.open { right: 10px; }
 
         .tab-handle {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 80px;
-            background: var(--bg-bright);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 24px;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 50px; height: 100px; background: var(--bg-bright);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 30px; border-radius: 20px;
         }
+        .left .tab-handle { right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+        .right .tab-handle { left: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; }
 
-        .left .tab-handle { right: 0; border-radius: 0 20px 20px 0; }
-        .right .tab-handle { left: 0; border-radius: 20px 0 0 20px; }
+        .pill-card { background: var(--bg-bright); border-radius: 24px; height: 100%; padding: 20px; overflow: hidden; }
 
-        .sidebar-content {
-            height: 100%;
-            width: calc(100% - 50px);
-            overflow-y: auto;
-            margin: 0 50px;
-            color: var(--off-white); /* Updated Text Color */
+        /* --- PARTICIPANTS (Fit 6 on screen) --- */
+        #player-container { 
+            display: flex; flex-direction: column; gap: 8px; 
+            height: calc(100% - 180px); /* Adjust for header/leaderboard */
         }
-
-        /* --- LAYOUT POSITIONS --- */
-        header {
-            text-align: center;
-            padding: 20px;
+        .player-slot {
+            background: rgba(0,0,0,0.1); border-radius: 15px;
+            padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+            position: relative;
         }
-
-        #timer-display {
-            font-size: 100px;
-            font-weight: bold;
-            color: var(--off-white);
-            margin-top: -10px;
-        }
-
-        .round-title { 
-            font-size: 30px; 
-            color: var(--off-white); 
-            letter-spacing: 5px;
-        }
-
-        .main-workspace {
-            flex: 1; /* This is the empty center part for scribbling */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* --- PLAYER LIST & LEADERBOARD --- */
-        .player-slot { margin-bottom: 15px; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .player-info { flex: 1; }
         .player-input {
             background: transparent; border: none; border-bottom: 1px solid var(--text-color);
-            color: var(--off-white); font-size: 16px; width: 100px;
+            color: var(--off-white); font-size: 18px; width: 100%; font-weight: bold;
         }
-        .gulp-btn { background: var(--accent-color); color: var(--bg-color); margin-left: 5px;}
-        
-        .mole-emoji { cursor: pointer; font-size: 22px; transition: 0.3s; }
-        .mole-emoji.used { opacity: 0.1; filter: grayscale(1); }
 
+        .gulp-circle {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--accent-color); color: var(--bg-color);
+            font-weight: 800; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0;
+        }
+
+        .mole-emoji { cursor: pointer; font-size: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        .mole-emoji.used { opacity: 0.15; grayscale: 1; }
+
+        /* --- LEADERBOARD --- */
         .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            margin-bottom: 5px;
-            padding: 5px;
-            border-bottom: 1px solid rgba(250, 249, 246, 0.2);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.05); margin-bottom: 4px; padding: 5px 10px;
+            border-radius: 10px; font-weight: bold; color: var(--off-white);
         }
+        .score-ctrl { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px; margin: 0 2px; }
 
-        /* --- BOTTOM NAV --- */
-        footer {
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .nav-btn { background: var(--bg-bright); padding: 12px 25px; color: var(--off-white); }
+        /* --- BUTTONS --- */
+        button { cursor: pointer; border: none; font-family: var(--font-main); transition: 0.2s; }
+        button:active { transform: scale(0.9); }
+        .nav-btn { background: var(--bg-bright); color: var(--off-white); padding: 15px 30px; border-radius: 50px; font-weight: bold; }
 
         #start-overlay {
             position: fixed; inset: 0; background: var(--bg-color);
-            z-index: 1000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-
         .hidden { display: none !important; }
+
+        .verification-overlay {
+            position: absolute; inset: 0; background: var(--bg-bright); 
+            display: flex; gap: 10px; align-items: center; justify-content: center; border-radius: 15px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Start Screen Overlay -->
     <div id="start-overlay">
-        <h1 style="font-size: 80px; color: var(--accent-color); margin-bottom: 20px;">BATTLESOUP</h1>
-        <button onclick="ui.startGame()" style="font-size: 28px; padding: 20px 50px;">START</button>
+        <h1 class="display-font" style="font-size: 10vw;">BATTLESOUP</h1>
+        <button onclick="ui.startGame()" class="nav-btn" style="font-size: 30px;">START GAME</button>
     </div>
 
-    <!-- Header: Round and Timer pushed to top -->
     <header>
-        <div id="round-indicator" class="round-title">ROUND 1</div>
-        <div id="timer-display">00:00</div>
+        <div id="round-indicator" class="display-font">ROUND 1</div>
+        <div id="timer-display" class="display-font">00:00</div>
     </header>
 
-    <!-- Center Workspace (Empty for scribbling) -->
     <main class="main-workspace">
         <button id="central-start-btn" onclick="game.startTimer()" 
-                style="font-size: 24px; padding: 20px 60px; border: 4px solid var(--off-white);">
+                style="font-size: 3vh; padding: 3vh 8vh; border-radius: 100px; background: var(--bg-bright); color: var(--off-white); border: 2px solid var(--off-white);">
             START TIMER
         </button>
     </main>
 
-    <!-- Left Sidebar: Players & Dynamic Leaderboard -->
+    <!-- LEFT SIDEBAR -->
     <div class="sidebar left" id="left-sidebar">
         <div class="tab-handle" onclick="ui.toggleSidebar('left')">🏆</div>
-        <div class="sidebar-content pill-card">
-            <h2 style="color: var(--accent-color); margin-bottom: 10px;">LEADERBOARD</h2>
-            <div id="leaderboard-list">
-                <!-- Sorted by Current Round Verification -->
-            </div>
-            <hr style="margin: 15px 0; opacity: 0.3;">
-            <h3 style="margin-bottom: 10px;">PARTICIPANTS</h3>
+        <div class="pill-card">
+            <h2 class="display-font" style="font-size: 20px; margin-bottom: 10px;">Leaderboard</h2>
+            <div id="leaderboard-list" style="height: 180px; overflow-y: auto; margin-bottom: 15px;"></div>
+            
+            <h2 class="display-font" style="font-size: 20px; margin-bottom: 10px;">Kitchen Staff</h2>
             <div id="player-container"></div>
-            <button onclick="game.addPlayer()" style="width: 100%; margin-top: 10px; background: rgba(0,0,0,0.2);">+ ADD PLAYER</button>
         </div>
     </div>
 
-    <!-- Right Sidebar: Leaner Powerups -->
+    <!-- RIGHT SIDEBAR -->
     <div class="sidebar right" id="right-sidebar">
         <div class="tab-handle" onclick="ui.toggleSidebar('right')">⚡</div>
-        <div class="sidebar-content pill-card">
-            <h2 style="color: var(--accent-color); font-size: 1.2em;">POWERUPS</h2>
-            <div style="margin-top:20px;">
-                <p><strong>🛡️ DODGE</strong><br><small>Choose LEFT or RIGHT on Treaty. If different from attacker, you dodge.</small></p>
-                <br>
-                <p><strong>🕵️ MOLE</strong><br><small>Ask about specific row/column (2 uses).</small></p>
-                <br>
-                <p><strong>🔍 ESPIONAGE</strong><br><small>2 guesses instead of attacking.</small></p>
+        <div class="pill-card">
+            <h2 class="display-font" style="font-size: 20px;">Powerups</h2>
+            <div style="margin-top:20px; color: var(--off-white); font-size: 14px;">
+                <p><strong>🛡️ DODGE</strong><br>Defender vs Attacker: LEFT or RIGHT. If different, dodge successful!</p>
+                <hr style="margin:15px 0; opacity:0.2">
+                <p><strong>🕵️ MOLE</strong><br>Check 1 Row/Col. 2 Uses.</p>
+                <hr style="margin:15px 0; opacity:0.2">
+                <p><strong>🔍 ESPIONAGE</strong><br>2 Guesses, No Attack.</p>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Controls -->
-    <footer>
-        <button class="nav-btn" onclick="game.changeRound(-1)">◀ BACK</button>
-        <button class="nav-btn" onclick="game.changeRound(1)">NEXT ▶</button>
+    <footer style="padding: 20px; display: flex; justify-content: center; gap: 10px;">
+        <button class="nav-btn" onclick="game.changeRound(-1)">BACK</button>
+        <button class="nav-btn" onclick="game.changeRound(1)">NEXT</button>
         <button class="nav-btn" onclick="ui.goHome()">HOME</button>
-        <button class="nav-btn" style="background: var(--accent-color); color: var(--bg-color)" onclick="game.pauseTimer()">STOP</button>
+        <button class="nav-btn" style="background: var(--off-white); color: var(--bg-color)" onclick="game.pauseTimer()">STOP</button>
         <button class="nav-btn" onclick="game.startTimer()">RESUME</button>
         <button class="nav-btn" onclick="game.resetTimer()">RESTART</button>
     </footer>
@@ -226,19 +177,14 @@
                 this.round = 1;
                 this.seconds = 0;
                 this.timerInterval = null;
-                this.players = [];
-            }
-
-            addPlayer() {
-                if (this.players.length >= 6) return;
-                this.players.push({
-                    id: Date.now(),
-                    name: `Slot ${this.players.length + 1}`,
-                    totalScore: 0,
-                    currentTime: null,
+                this.elements = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon"];
+                this.players = this.elements.map((name, i) => ({
+                    id: i,
+                    name: name,
+                    baseScore: 0,
+                    roundTime: null,
                     isVerified: false
-                });
-                ui.renderPlayers();
+                }));
             }
 
             startTimer() {
@@ -263,51 +209,40 @@
             }
 
             changeRound(val) {
-                // Finalize points from current round before switching
+                // Commit round points to baseScore
                 this.players.forEach(p => {
-                    if (p.isVerified) {
-                        const rank = this.getRankInRound(p);
-                        if (rank === 0) p.totalScore += 3;
-                        else if (rank === 1) p.totalScore += 2;
-                        else p.totalScore += 1;
-                    }
-                    // Reset round state
-                    p.currentTime = null;
+                    if (p.isVerified) p.baseScore += ui.getRoundPoints(p);
+                    p.roundTime = null;
                     p.isVerified = false;
                 });
-
                 this.round = Math.max(1, this.round + val);
-                ui.updateRound(this.round);
                 this.resetTimer();
-                ui.renderPlayers();
-                ui.renderLeaderboard();
+                ui.updateRound(this.round);
+                ui.renderAll();
             }
 
             recordGulp(id) {
-                const p = this.players.find(x => x.id === id);
-                if (p && p.currentTime === null) {
-                    p.currentTime = this.seconds;
-                    ui.renderPlayers();
+                const p = this.players[id];
+                if (p.roundTime === null) {
+                    p.roundTime = this.seconds;
+                    ui.renderAll();
                 }
             }
 
-            verify(id, correct) {
-                const p = this.players.find(x => x.id === id);
-                if (correct) {
+            verify(id, status) {
+                const p = this.players[id];
+                if (status) {
                     p.isVerified = true;
                 } else {
-                    p.currentTime = null;
+                    p.roundTime = null;
                     p.isVerified = false;
                 }
-                ui.renderPlayers();
-                ui.renderLeaderboard();
+                ui.renderAll();
             }
 
-            getRankInRound(player) {
-                return this.players
-                    .filter(p => p.isVerified)
-                    .sort((a, b) => a.currentTime - b.currentTime)
-                    .indexOf(player);
+            adjustScore(id, delta) {
+                this.players[id].baseScore += delta;
+                ui.renderAll();
             }
         }
 
@@ -326,64 +261,80 @@
                 document.getElementById('round-indicator').innerText = `ROUND ${r}`;
             }
 
-            startGame() {
-                document.getElementById('start-overlay').classList.add('hidden');
-                game.addPlayer();
+            formatTime(s) {
+                return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
             }
 
-            goHome() { if(confirm("Reset everything?")) location.reload(); }
+            getRoundPoints(player) {
+                if (!player.isVerified) return 0;
+                const verifiedOnes = game.players
+                    .filter(p => p.isVerified)
+                    .sort((a, b) => a.roundTime - b.roundTime);
+                const rank = verifiedOnes.findIndex(p => p.id === player.id);
+                if (rank === 0) return 3;
+                if (rank === 1) return 2;
+                return 1;
+            }
+
+            renderAll() {
+                this.renderPlayers();
+                this.renderLeaderboard();
+            }
 
             renderPlayers() {
                 const container = document.getElementById('player-container');
                 container.innerHTML = game.players.map(p => `
-                    <div class="player-slot pill-card">
-                        <input class="player-input" value="${p.name}" onchange="game.players.find(x=>x.id==${p.id}).name=this.value">
-                        <button class="gulp-btn" onclick="game.recordGulp(${p.id})">GULP!</button>
-                        <div style="margin-top:8px">
-                            <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
-                            <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
-                            <span style="float:right; font-weight:bold">${p.currentTime !== null ? ui.formatTime(p.currentTime) : ''}</span>
+                    <div class="player-slot">
+                        <button class="gulp-circle" onclick="game.recordGulp(${p.id})">GULP!</button>
+                        <div class="player-info">
+                            <input class="player-input" value="${p.name}" onchange="game.players[${p.id}].name=this.value">
+                            <div style="margin-top:5px; display:flex; gap:10px; align-items:center;">
+                                <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
+                                <span class="mole-emoji" onclick="this.classList.toggle('used')">🦔</span>
+                                <span style="color:var(--off-white); font-weight:bold; font-size:14px;">
+                                    ${p.roundTime !== null ? this.formatTime(p.roundTime) : ''}
+                                </span>
+                            </div>
                         </div>
-                        ${p.currentTime !== null && !p.isVerified ? `
-                            <div style="margin-top:10px">
-                                <button onclick="game.verify(${p.id}, true)" style="background:#4CAF50; font-size:12px">CORRECT</button>
-                                <button onclick="game.verify(${p.id}, false)" style="background:#EF3E4A; font-size:12px">WRONG</button>
+                        ${p.roundTime !== null && !p.isVerified ? `
+                            <div class="verification-overlay">
+                                <button onclick="game.verify(${p.id}, true)" style="background:#4CAF50; color:white; padding:10px; border-radius:10px;">YES</button>
+                                <button onclick="game.verify(${p.id}, false)" style="background:#f44336; color:white; padding:10px; border-radius:10px;">NO</button>
                             </div>
                         ` : ''}
+                        ${p.isVerified ? `<span style="color:#4CAF50; font-weight:bold;">✓</span>` : ''}
                     </div>
                 `).join('');
             }
 
             renderLeaderboard() {
                 const list = document.getElementById('leaderboard-list');
-                // Calculate temporary "live" scores for the current round
                 const sorted = [...game.players].sort((a, b) => {
-                    const scoreA = a.totalScore + (a.isVerified ? this.getLivePoints(a) : 0);
-                    const scoreB = b.totalScore + (b.isVerified ? this.getLivePoints(b) : 0);
-                    return scoreB - scoreA;
+                    const totalA = a.baseScore + this.getRoundPoints(a);
+                    const totalB = b.baseScore + this.getRoundPoints(b);
+                    return totalB - totalA;
                 });
 
-                list.innerHTML = sorted
-                    .filter(p => p.totalScore > 0 || p.isVerified)
-                    .map(p => `
+                list.innerHTML = sorted.map(p => {
+                    const roundPts = this.getRoundPoints(p);
+                    const displayScore = p.baseScore + roundPts;
+                    return `
                         <div class="leaderboard-entry">
-                            <span>${p.name}</span>
-                            <span>${p.totalScore + (p.isVerified ? this.getLivePoints(p) : 0)} PT</span>
+                            <span style="flex:1">${p.name}</span>
+                            <span style="margin-right:10px; color:var(--accent-color)">${displayScore} PT</span>
+                            <button class="score-ctrl" onclick="game.adjustScore(${p.id}, 1)">+</button>
+                            <button class="score-ctrl" onclick="game.adjustScore(${p.id}, -1)">-</button>
                         </div>
-                    `).join('');
+                    `;
+                }).join('');
             }
 
-            getLivePoints(player) {
-                const rank = game.getRankInRound(player);
-                if (rank === 0) return 3;
-                if (rank === 1) return 2;
-                if (rank > 1) return 1;
-                return 0;
+            startGame() {
+                document.getElementById('start-overlay').classList.add('hidden');
+                this.renderAll();
             }
 
-            formatTime(s) {
-                return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
-            }
+            goHome() { if(confirm("Reset Game?")) location.reload(); }
         }
 
         const game = new GameEngine();
